@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit & Sleep Tracker · 2026–2027</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #0a0c12;
+            color: #e8edf5;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* --- Header --- */
+        .app-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .app-header .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7aa9ff, #b388ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .app-header .logo span {
+            font-size: 2.2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: rgba(30, 33, 41, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(46, 52, 64, 0.6);
+            color: #b0c4f0;
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: rgba(46, 52, 64, 0.6);
+            border-color: rgba(122, 169, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(42, 58, 92, 0.9), rgba(74, 106, 156, 0.9));
+            border-color: rgba(74, 106, 156, 0.6);
+            color: #b0d4ff;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, rgba(52, 68, 102, 0.9), rgba(84, 116, 166, 0.9));
+            border-color: rgba(122, 169, 255, 0.6);
+        }
+
+        .btn-danger {
+            color: #ff8a9b;
+            border-color: rgba(255, 138, 155, 0.2);
+        }
+
+        .btn-danger:hover {
+            border-color: rgba(255, 138, 155, 0.5);
+            background: rgba(255, 138, 155, 0.1);
+        }
+
+        /* --- Tabs --- */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.3rem;
+            background: rgba(24, 28, 37, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #6f7a95;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: #b0c4f0;
+            background: rgba(30, 33, 41, 0.5);
+        }
+
+        .tab-btn.active {
+            color: #e8edf5;
+            background: rgba(30, 33, 41, 0.8);
+            box-shadow: 0 0 20px rgba(122, 169, 255, 0.1);
+            border: 1px solid rgba(122, 169, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Month Selector (Tracker) --- */
+        .tracker-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.2rem;
+            background: rgba(24, 28, 37, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+        }
+
+        .tracker-controls .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .tracker-controls .month-selector label {
+            color: #8a94b0;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .tracker-controls .month-selector select {
+            background: rgba(26, 30, 40, 0.8);
+            border: 1px solid rgba(46, 52, 64, 0.6);
+            color: #e8edf5;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tracker-controls .month-selector select:hover {
+            border-color: rgba(122, 169, 255, 0.4);
+        }
+
+        .tracker-controls .month-selector select option {
+            background: #1a1e28;
+        }
+
+        .tracker-stats-mini {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tracker-stats-mini .mini-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #8a94b0;
+        }
+
+        .tracker-stats-mini .mini-stat .value {
+            font-weight: 600;
+            color: #b0c4f0;
+        }
+
+        .tracker-stats-mini .mini-stat .value.gold {
+            color: #f0c27f;
+        }
+        .tracker-stats-mini .mini-stat .value.green {
+            color: #6fcf97;
+        }
+        .tracker-stats-mini .mini-stat .value.purple {
+            color: #b388ff;
+        }
+
+        /* --- Table --- */
+        .table-wrapper {
+            background: rgba(24, 28, 37, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+            overflow: auto;
+            padding: 0.5rem;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 900px;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.7rem 0.4rem;
+            font-weight: 500;
+            color: #9aa4bf;
+            border-bottom: 1px solid rgba(46, 52, 64, 0.4);
+            font-size: 0.75rem;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        th:first-child {
+            padding-left: 0.8rem;
+            min-width: 160px;
+        }
+
+        th:last-child {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        td {
+            padding: 0.25rem 0.2rem;
+            border-bottom: 1px solid rgba(34, 39, 51, 0.6);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            text-align: left;
+            padding-left: 0.8rem;
+            font-weight: 450;
+            color: #d3dcec;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        td:last-child {
+            font-weight: 500;
+            color: #b0c4f0;
+            background: rgba(18, 22, 30, 0.5);
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+
+        .habit-cell {
+            width: 34px;
+            height: 34px;
+            margin: 0 auto;
+            border-radius: 10px;
+            background: rgba(35, 40, 51, 0.6);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: transparent;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+        }
+
+        .habit-cell:hover {
+            background: rgba(47, 53, 69, 0.8);
+            transform: scale(1.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .habit-cell.done {
+            background: linear-gradient(135deg, #1f5a3a, #2d7a4a);
+            border-color: #3aaf72;
+            color: #b5f0d0;
+            box-shadow: 0 0 20px rgba(58, 175, 114, 0.15), inset 0 0 20px rgba(58, 175, 114, 0.05);
+        }
+
+        .habit-cell.done:hover {
+            background: linear-gradient(135deg, #2d7a4a, #3aaf72);
+        }
+
+        .sleep-input {
+            width: 54px;
+            padding: 4px 2px;
+            border-radius: 10px;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+            background: rgba(26, 30, 40, 0.6);
+            color: #e8edf5;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .sleep-input:focus {
+            border-color: #7aa9ff;
+            background: rgba(31, 36, 48, 0.8);
+            box-shadow: 0 0 20px rgba(122, 169, 255, 0.1);
+        }
+
+        .sleep-input::placeholder {
+            color: #4a536b;
+            font-size: 0.7rem;
+        }
+
+        .sleep-select {
+            width: 82px;
+            padding: 4px 2px;
+            border-radius: 10px;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+            background: rgba(26, 30, 40, 0.6);
+            color: #e8edf5;
+            text-align: center;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sleep-select:focus {
+            border-color: #b388ff;
+            box-shadow: 0 0 20px rgba(179, 136, 255, 0.1);
+        }
+
+        .sleep-select option {
+            background: #1a1e28;
+        }
+
+        .today-highlight {
+            background: rgba(45, 42, 31, 0.4);
+            border-bottom: 2px solid #f0c27f;
+            position: relative;
+        }
+
+        .today-highlight::before {
+            content: '●';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #f0c27f;
+            font-size: 0.6rem;
+            opacity: 0.6;
+        }
+
+        .today-highlight .habit-cell {
+            border-color: #b8974c;
+        }
+
+        .today-highlight .sleep-input,
+        .today-highlight .sleep-select {
+            border-color: #b8974c;
+        }
+
+        .daily-total-row td:first-child {
+            font-weight: 600;
+            color: #bcc9e6;
+        }
+
+        .daily-total-row td {
+            background: rgba(19, 24, 33, 0.6);
+            border-top: 1px solid rgba(47, 53, 69, 0.4);
+            font-weight: 500;
+            color: #b0c4f0;
+            padding: 0.5rem 0.2rem;
+        }
+
+        .daily-total-row .habit-cell {
+            background: rgba(30, 35, 47, 0.6);
+            color: #b0c4f0;
+            border-color: rgba(47, 53, 69, 0.4);
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .section-divider td {
+            border-bottom: 2px solid rgba(47, 53, 69, 0.4);
+            padding: 0.5rem 0;
+        }
+
+        .section-divider td:first-child {
+            color: #7aa9ff;
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding-top: 0.8rem;
+        }
+
+        /* --- Dashboard --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(24, 28, 37, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.2rem 1.2rem;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(63, 74, 94, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8a94b0;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-top: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .stat-value.green {
+            color: #6fcf97;
+        }
+        .stat-value.blue {
+            color: #7aa9ff;
+        }
+        .stat-value.gold {
+            color: #f0c27f;
+        }
+        .stat-value.purple {
+            color: #b388ff;
+        }
+        .stat-value.pink {
+            color: #ff8a9b;
+        }
+        .stat-value.teal {
+            color: #4dd0e1;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(24, 28, 37, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(46, 52, 64, 0.4);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            border-color: rgba(63, 74, 94, 0.6);
+        }
+
+        .chart-card h3 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #9aa4bf;
+            margin-bottom: 1rem;
+            letter-spacing: 0.3px;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .chart-container.tall {
+            height: 320px;
+        }
+
+        /* --- Heatmap --- */
+        .heatmap-wrapper {
+            overflow-x: auto;
+            margin-top: 0.5rem;
+        }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 600px;
+        }
+
+        .heatmap-table th {
+            padding: 0.5rem 0.3rem;
+            color: #8a94b0;
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid rgba(46, 52, 64, 0.4);
+        }
+
+        .heatmap-table td {
+            padding: 0.4rem 0.3rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(30, 33, 41, 0.4);
+        }
+
+        .heatmap-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #d3dcec;
+            padding-left: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .heat-cell {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            min-width: 40px;
+        }
+
+        .heat-cell.high {
+            background: linear-gradient(135deg, #1f5a3a, #2d7a4a);
+            color: #b5f0d0;
+        }
+        .heat-cell.medium {
+            background: linear-gradient(135deg, #5a4a1f, #7a6a2f);
+            color: #f0d0a0;
+        }
+        .heat-cell.low {
+            background: linear-gradient(135deg, #4a2a2a, #6a3a3a);
+            color: #f0a0a0;
+        }
+        .heat-cell.none {
+            background: rgba(26, 30, 40, 0.6);
+            color: #4a536b;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            margin-top: 2.5rem;
+            color: #5f6a82;
+            font-size: 0.8rem;
+            text-align: center;
+            letter-spacing: 0.3px;
+            border-top: 1px solid rgba(30, 33, 41, 0.4);
+            padding-top: 1.5rem;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .chart-card.full-width {
+                grid-column: 1;
+            }
+            .app-header .logo h1 {
+                font-size: 1.5rem;
+            }
+            .tracker-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .tracker-stats-mini {
+                justify-content: space-around;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            .tab-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .tab-btn span {
+                display: none;
+            }
+            .chart-container {
+                height: 220px;
+            }
+            .chart-container.tall {
+                height: 260px;
+            }
+            .habit-cell {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+            .sleep-input {
+                width: 42px;
+                font-size: 0.75rem;
+            }
+            .sleep-select {
+                width: 68px;
+                font-size: 0.7rem;
+            }
+            .header-actions .btn span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span>🧩</span>
+                <h1>Habit & Sleep Tracker</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="refreshBtn">🔄 <span>Refresh</span></button>
+                <button class="btn btn-danger" id="resetBtn">🗑️ <span>Reset All</span></button>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tracker">📋 <span>Tracker</span></button>
+            <button class="tab-btn" data-tab="dashboard">📊 <span>Dashboard</span></button>
+        </div>
+
+        <!-- ============================== -->
+        <!-- TAB: TRACKER                    -->
+        <!-- ============================== -->
+        <div class="tab-content active" id="tab-tracker">
+            <!-- Controls -->
+            <div class="tracker-controls">
+                <div class="month-selector">
+                    <label for="monthSelect">📅 Month</label>
+                    <select id="monthSelect"></select>
+                </div>
+                <div class="tracker-stats-mini" id="miniStats">
+                    <div class="mini-stat">✅ Done: <span class="value" id="miniDone">0</span></div>
+                    <div class="mini-stat">📊 Consistency: <span class="value gold" id="miniConsistency">0%</span></div>
+                    <div class="mini-stat">🌙 Avg Sleep: <span class="value purple" id="miniAvgSleep">—</span></div>
+                    <div class="mini-stat">⭐ Best Day: <span class="value green" id="miniBestDay">—</span></div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <table id="habitTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================== -->
+        <!-- TAB: DASHBOARD                 -->
+        <!-- ============================== -->
+        <div class="tab-content" id="tab-dashboard">
+            <!-- Habit Summary -->
+            <div class="summary-grid" id="habitSummary">
+                <div class="stat-card">
+                    <div class="stat-label">✅ Total Habits Done</div>
+                    <div class="stat-value blue" id="totalHabits">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📊 Avg Consistency</div>
+                    <div class="stat-value gold" id="avgConsistency">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">⭐ Best Month</div>
+                    <div class="stat-value green" id="bestMonth">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📅 Months Tracked</div>
+                    <div class="stat-value" id="monthsTracked" style="color:#b0c4f0;">0</div>
+                </div>
+            </div>
+
+            <!-- Habit Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>📈 Habit Completion Rate</h3>
+                    <div class="chart-container"><canvas id="habitBarChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>📉 Monthly Consistency Trend</h3>
+                    <div class="chart-container"><canvas id="habitLineChart"></canvas></div>
+                </div>
+                <div class="chart-card full-width">
+                    <h3>🔥 Monthly Habit Heatmap</h3>
+                    <div class="heatmap-wrapper" id="heatmapContainer"></div>
+                </div>
+            </div>
+
+            <!-- Sleep Summary -->
+            <div class="summary-grid" id="sleepSummary">
+                <div class="stat-card">
+                    <div class="stat-label">🌙 Avg Sleep (all months)</div>
+                    <div class="stat-value purple" id="avgSleepAll">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🏆 Best Sleep Month</div>
+                    <div class="stat-value teal" id="bestSleepMonth">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">💤 Great Quality Nights</div>
+                    <div class="stat-value green" id="totalGreatQuality">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🌙 Nights Tracked</div>
+                    <div class="stat-value" id="sleepNightsTracked" style="color:#b0c4f0;">0</div>
+                </div>
+            </div>
+
+            <!-- Sleep Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>🌙 Average Sleep Hours</h3>
+                    <div class="chart-container"><canvas id="sleepLineChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>⏰ 7+ Hours Nights</h3>
+                    <div class="chart-container"><canvas id="sleepBarChart"></canvas></div>
+                </div>
+                <div class="chart-card full-width">
+                    <h3>💤 Sleep Quality Distribution</h3>
+                    <div class="chart-container tall"><canvas id="sleepPieChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            💾 All data is saved automatically in your browser · Click a habit cell to toggle · Sleep: enter hours & select quality
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        const HABITS = [
+            "Wake up at 8am",
+            "Stretch",
+            "Study Session (i)",
+            "Workout",
+            "Skill",
+            "No Addictions",
+            "Study Session (ii)",
+            "Drink 3-4 L Water",
+            "Sleep before 12am"
+        ];
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        // September 2026 – December 2027
+        const EXPECTED_MONTHS = [];
+        for (let y = 2026; y <= 2027; y++) {
+            const start = (y === 2026) ? 8 : 0;
+            const end = (y === 2027) ? 11 : 11;
+            for (let m = start; m <= end; m++) {
+                EXPECTED_MONTHS.push({ year: y, month: m });
+            }
+        }
+
+        const today = new Date();
+        const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        // ============================================================
+        // DATA MANAGEMENT
+        // ============================================================
+        let data = {};
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem('habitSleepTrackerData');
+                if (raw) data = JSON.parse(raw);
+                else data = {};
+            } catch (e) { data = {}; }
+        }
+
+        function saveData() {
+            localStorage.setItem('habitSleepTrackerData', JSON.stringify(data));
+        }
+
+        function getMonthData(year, month) {
+            const key = `${year}-${String(month+1).padStart(2,'0')}`;
+            if (!data[key]) data[key] = { habits: {}, sleep: {} };
+            if (!data[key].habits) data[key].habits = {};
+            if (!data[key].sleep) data[key].sleep = {};
+            return data[key];
+        }
+
+        function daysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function getDayOfWeek(year, month, day) {
+            return new Date(year, month, day).toLocaleDateString('en', { weekday: 'short' });
+        }
+
+        function formatDateKey(year, month) {
+            return `${year}-${String(month+1).padStart(2,'0')}`;
+        }
+
+        function getTodayColIndex(year, month) {
+            if (todayDate.getFullYear() === year && todayDate.getMonth() === month) {
+                return todayDate.getDate() - 1;
+            }
+            return -1;
+        }
+
+        // ============================================================
+        // TRACKER RENDER
+        // ============================================================
+        let currentYear = 2026,
+            currentMonth = 8;
+
+        function renderTracker(year, month) {
+            currentYear = year;
+            currentMonth = month;
+            const days = daysInMonth(year, month);
+            const monthData = getMonthData(year, month);
+            const todayCol = getTodayColIndex(year, month);
+
+            // Build header
+            let theadHtml = '<tr><th>HABIT</th>';
+            for (let d = 1; d <= days; d++) {
+                const dow = getDayOfWeek(year, month, d);
+                theadHtml += `<th>${d}<br><span style="font-weight:400;font-size:0.7rem;color:#6f7a95;">${dow}</span></th>`;
+            }
+            theadHtml += '<th>Count</th></tr>';
+            document.getElementById('tableHead').innerHTML = theadHtml;
+
+            // Calculate daily totals
+            const dailyTotals = new Array(days).fill(0);
+            for (let d = 0; d < days; d++) {
+                const dayKey = String(d);
+                if (monthData.habits[dayKey]) {
+                    dailyTotals[d] = monthData.habits[dayKey].length;
+                }
+            }
+
+            let tbodyHtml = '';
+
+            // Habit rows
+            HABITS.forEach((habit, hIdx) => {
+                let row = `<tr><td>${habit}</td>`;
+                let count = 0;
+                for (let d = 0; d < days; d++) {
+                    const dayKey = String(d);
+                    const isDone = monthData.habits[dayKey] && monthData.habits[dayKey].includes(hIdx);
+                    if (isDone) count++;
+                    const isToday = (todayCol === d);
+                    const cellClass = `habit-cell${isDone ? ' done' : ''}`;
+                    const tdClass = isToday ? 'today-highlight' : '';
+                    const mark = isDone ? '✓' : '';
+                    row += `<td class="${tdClass}"><div class="${cellClass}" data-year="${year}" data-month="${month}" data-day="${d}" data-habit="${hIdx}">${mark}</div></td>`;
+                }
+                row += `<td>${count}</td></tr>`;
+                tbodyHtml += row;
+            });
+
+            // Daily total row
+            let totalRow = `<tr class="daily-total-row"><td>Daily Total</td>`;
+            let grandTotal = 0;
+            for (let d = 0; d < days; d++) {
+                const val = dailyTotals[d];
+                grandTotal += val;
+                const isToday = (todayCol === d);
+                const tdClass = isToday ? 'today-highlight' : '';
+                totalRow += `<td class="${tdClass}"><div class="habit-cell" style="background:transparent;border-color:#2f3545;color:#b0c4f0;">${val}</div></td>`;
+            }
+            totalRow += `<td>${grandTotal}</td></tr>`;
+            tbodyHtml += totalRow;
+
+            // Sleep section
+            tbodyHtml += `<tr class="section-divider"><td colspan="${days+2}" style="text-align:left;padding-left:0.8rem;">🌙 SLEEP TRACKER</td></tr>`;
+
+            // Hours row
+            let hoursRow = `<tr><td style="color:#8a94b0;">Hours Slept</td>`;
+            let sleepHours = [];
+            for (let d = 0; d < days; d++) {
+                const dayKey = String(d);
+                const val = monthData.sleep[dayKey] ? monthData.sleep[dayKey].hours : '';
+                if (val !== '' && !isNaN(parseFloat(val))) sleepHours.push(parseFloat(val));
+                const isToday = (todayCol === d);
+                const tdClass = isToday ? 'today-highlight' : '';
+                hoursRow += `<td class="${tdClass}"><input class="sleep-input" type="text" inputmode="decimal" placeholder="hrs" value="${val}" data-year="${year}" data-month="${month}" data-day="${d}" data-field="hours"></td>`;
+            }
+            hoursRow += `<td>${sleepHours.length ? (sleepHours.reduce((a,b) => a+b, 0) / sleepHours.length).toFixed(1) : '—'}</td></tr>`;
+            tbodyHtml += hoursRow;
+
+            // Quality row
+            let qualityRow = `<tr><td style="color:#8a94b0;">Sleep Quality</td>`;
+            let greatCount = 0;
+            for (let d = 0; d < days; d++) {
+                const dayKey = String(d);
+                const val = monthData.sleep[dayKey] ? monthData.sleep[dayKey].quality : '';
+                if (val === 'Great') greatCount++;
+                const isToday = (todayCol === d);
+                const tdClass = isToday ? 'today-highlight' : '';
+                qualityRow += `<td class="${tdClass}"><select class="sleep-select" data-year="${year}" data-month="${month}" data-day="${d}" data-field="quality">
+                    <option value="">—</option>
+                    <option value="Poor" ${val === 'Poor' ? 'selected' : ''}>Poor</option>
+                    <option value="Fair" ${val === 'Fair' ? 'selected' : ''}>Fair</option>
+                    <option value="Good" ${val === 'Good' ? 'selected' : ''}>Good</option>
+                    <option value="Great" ${val === 'Great' ? 'selected' : ''}>Great</option>
+                </select></td>`;
+            }
+            qualityRow += `<td>${greatCount}</td></tr>`;
+            tbodyHtml += qualityRow;
+
+            document.getElementById('tableBody').innerHTML = tbodyHtml;
+
+            // Attach events
+            document.querySelectorAll('.habit-cell[data-habit]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const year = parseInt(this.dataset.year);
+                    const month = parseInt(this.dataset.month);
+                    const day = parseInt(this.dataset.day);
+                    const habit = parseInt(this.dataset.habit);
+                    toggleHabit(year, month, day, habit);
+                });
+            });
+
+            document.querySelectorAll('.sleep-input').forEach(el => {
+                el.addEventListener('change', function() {
+                    const year = parseInt(this.dataset.year);
+                    const month = parseInt(this.dataset.month);
+                    const day = parseInt(this.dataset.day);
+                    const field = this.dataset.field;
+                    updateSleep(year, month, day, field, this.value.trim());
+                });
+                el.addEventListener('blur', function() {
+                    this.dispatchEvent(new Event('change'));
+                });
+            });
+
+            document.querySelectorAll('.sleep-select').forEach(el => {
+                el.addEventListener('change', function() {
+                    const year = parseInt(this.dataset.year);
+                    const month = parseInt(this.dataset.month);
+                    const day = parseInt(this.dataset.day);
+                    const field = this.dataset.field;
+                    updateSleep(year, month, day, field, this.value);
+                });
+            });
+
+            // Update mini stats
+            const daysWithData = dailyTotals.filter(v => v > 0).length;
+            const totalHabitsDone = dailyTotals.reduce((a, b) => a + b, 0);
+            const maxPossible = HABITS.length * days;
+            const consistency = maxPossible > 0 ? Math.round((totalHabitsDone / maxPossible) * 100) : 0;
+            const bestDayValue = dailyTotals.length ? Math.max(...dailyTotals) : 0;
+            const bestDayIndex = dailyTotals.indexOf(bestDayValue);
+            const bestDayLabel = bestDayIndex !== -1 ? `${bestDayIndex+1}` : '—';
+
+            document.getElementById('miniDone').textContent = totalHabitsDone;
+            document.getElementById('miniConsistency').textContent = consistency + '%';
+            document.getElementById('miniBestDay').textContent = bestDayValue > 0 ? `${bestDayValue} (day ${bestDayLabel})` : '—';
+
+            // Sleep stats
+            let allHours = [];
+            for (let d = 0; d < days; d++) {
+                const dayKey = String(d);
+                const entry = monthData.sleep[dayKey];
+                if (entry && entry.hours !== '' && !isNaN(parseFloat(entry.hours))) {
+                    allHours.push(parseFloat(entry.hours));
+                }
+            }
+            const avgSleep = allHours.length ? (allHours.reduce((a, b) => a + b, 0) / allHours.length).toFixed(1) : '—';
+            document.getElementById('miniAvgSleep').textContent = avgSleep;
+        }
+
+        // ============================================================
+        // TRACKER ACTIONS
+        // ============================================================
+        function toggleHabit(year, month, dayIndex, habitIndex) {
+            const monthData = getMonthData(year, month);
+            const dayKey = String(dayIndex);
+            if (!monthData.habits[dayKey]) monthData.habits[dayKey] = [];
+            const arr = monthData.habits[dayKey];
+            const idx = arr.indexOf(habitIndex);
+            if (idx === -1) {
+                arr.push(habitIndex);
+                arr.sort((a, b) => a - b);
+            } else {
+                arr.splice(idx, 1);
+            }
+            saveData();
+            renderTracker(year, month);
+            updateDashboard();
+        }
+
+        function updateSleep(year, month, dayIndex, field, value) {
+            const monthData = getMonthData(year, month);
+            const dayKey = String(dayIndex);
+            if (!monthData.sleep[dayKey]) monthData.sleep[dayKey] = { hours: '', quality: '' };
+            if (field === 'hours') {
+                monthData.sleep[dayKey].hours = value;
+            } else if (field === 'quality') {
+                monthData.sleep[dayKey].quality = value;
+            }
+            saveData();
+            renderTracker(year, month);
+            updateDashboard();
+        }
+
+        // ============================================================
+        // MONTH SELECTOR
+        // ============================================================
+        function populateMonthSelect() {
+            const select = document.getElementById('monthSelect');
+            select.innerHTML = '';
+            EXPECTED_MONTHS.forEach(({ year, month }) => {
+                const opt = document.createElement('option');
+                opt.value = formatDateKey(year, month);
+                opt.textContent = `${MONTH_NAMES[month]} ${year}`;
+                select.appendChild(opt);
+            });
+            const currentKey = formatDateKey(todayDate.getFullYear(), todayDate.getMonth());
+            const exists = EXPECTED_MONTHS.some(m => formatDateKey(m.year, m.month) === currentKey);
+            select.value = exists ? currentKey : formatDateKey(EXPECTED_MONTHS[0].year, EXPECTED_MONTHS[0].month);
+        }
+
+        document.getElementById('monthSelect').addEventListener('change', function() {
+            const parts = this.value.split('-');
+            renderTracker(parseInt(parts[0]), parseInt(parts[1]) - 1);
+        });
+
+        // ============================================================
+        // DASHBOARD
+        // ============================================================
+        let chartInstances = {};
+
+        function destroyCharts() {
+            Object.values(chartInstances).forEach(c => { if (c) c.destroy(); });
+            chartInstances = {};
+        }
+
+        function processHabitData() {
+            const results = [];
+            let totalHabitsDone = 0;
+            let totalPossible = 0;
+            let monthlyConsistency = [];
+
+            EXPECTED_MONTHS.forEach(({ year, month }) => {
+                const monthData = getMonthData(year, month);
+                const days = daysInMonth(year, month);
+                let monthTotal = 0;
+
+                for (let d = 0; d < days; d++) {
+                    const dayKey = String(d);
+                    if (monthData.habits[dayKey]) {
+                        monthTotal += monthData.habits[dayKey].length;
+                    }
+                }
+
+                const possible = HABITS.length * days;
+                const consistency = possible > 0 ? (monthTotal / possible) * 100 : 0;
+
+                results.push({
+                    year,
+                    month,
+                    label: `${MONTH_NAMES[month]} ${year}`,
+                    total: monthTotal,
+                    possible,
+                    consistency: Math.round(consistency),
+                    days
+                });
+
+                totalHabitsDone += monthTotal;
+                totalPossible += possible;
+                monthlyConsistency.push(Math.round(consistency));
+            });
+
+            const avgConsistency = totalPossible > 0 ? (totalHabitsDone / totalPossible) * 100 : 0;
+            const bestIdx = monthlyConsistency.indexOf(Math.max(...monthlyConsistency));
+            const bestMonthLabel = bestIdx !== -1 ? results[bestIdx].label : '—';
+
+            return {
+                results,
+                totalHabitsDone,
+                avgConsistency: Math.round(avgConsistency),
+                bestMonthLabel,
+                monthlyConsistency
+            };
+        }
+
+        function processSleepData() {
+            const results = [];
+            let totalHours = 0;
+            let totalCount = 0;
+            let totalGreat = 0;
+            let bestAvg = 0;
+            let bestMonthLabel = '—';
+
+            EXPECTED_MONTHS.forEach(({ year, month }) => {
+                const monthData = getMonthData(year, month);
+                const days = daysInMonth(year, month);
+                let hours = [];
+                let great = 0;
+
+                for (let d = 0; d < days; d++) {
+                    const dayKey = String(d);
+                    const entry = monthData.sleep[dayKey];
+                    if (entry) {
+                        if (entry.hours && !isNaN(parseFloat(entry.hours))) {
+                            hours.push(parseFloat(entry.hours));
+                        }
+                        if (entry.quality === 'Great') great++;
+                    }
+                }
+
+                const avg = hours.length > 0 ? hours.reduce((a, b) => a + b, 0) / hours.length : 0;
+                const nights7plus = hours.filter(h => h >= 7).length;
+
+                results.push({
+                    year,
+                    month,
+                    label: `${MONTH_NAMES[month]} ${year}`,
+                    avg: Math.round(avg * 10) / 10,
+                    nights7plus,
+                    totalNights: hours.length,
+                    great,
+                    hours
+                });
+
+                totalHours += hours.reduce((a, b) => a + b, 0);
+                totalCount += hours.length;
+                totalGreat += great;
+
+                if (avg > bestAvg && hours.length > 0) {
+                    bestAvg = avg;
+                    bestMonthLabel = results[results.length - 1].label;
+                }
+            });
+
+            const overallAvg = totalCount > 0 ? totalHours / totalCount : 0;
+
+            return {
+                results,
+                overallAvg: Math.round(overallAvg * 10) / 10,
+                totalGreat,
+                totalNights: totalCount,
+                bestMonthLabel
+            };
+        }
+
+        function renderHeatmap(results) {
+            const container = document.getElementById('heatmapContainer');
+            let html = `<table class="heatmap-table">
+                <thead><tr><th>Habit</th>`;
+
+            results.forEach(r => {
+                html += `<th>${r.label}</th>`;
+            });
+            html += `</tr></thead><tbody>`;
+
+            HABITS.forEach((habit, idx) => {
+                html += `<tr><td>${habit}</td>`;
+                results.forEach(({ year, month, days }) => {
+                    const monthData = getMonthData(year, month);
+                    let count = 0;
+                    for (let d = 0; d < days; d++) {
+                        const dayKey = String(d);
+                        if (monthData.habits[dayKey] && monthData.habits[dayKey].includes(idx)) {
+                            count++;
+                        }
+                    }
+                    const pct = days > 0 ? (count / days) * 100 : 0;
+                    let cls = 'none';
+                    if (pct >= 70) cls = 'high';
+                    else if (pct >= 40) cls = 'medium';
+                    else if (pct > 0) cls = 'low';
+                    html += `<td><span class="heat-cell ${cls}">${Math.round(pct)}%</span></td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function updateDashboard() {
+            const habitData = processHabitData();
+            const sleepData = processSleepData();
+
+            // Update habit summary
+            document.getElementById('totalHabits').textContent = habitData.totalHabitsDone;
+            document.getElementById('avgConsistency').textContent = habitData.avgConsistency + '%';
+            document.getElementById('bestMonth').textContent = habitData.bestMonthLabel;
+            document.getElementById('monthsTracked').textContent = habitData.results.length;
+
+            // Update sleep summary
+            document.getElementById('avgSleepAll').textContent = sleepData.overallAvg > 0 ? sleepData.overallAvg + ' hrs' : '—';
+            document.getElementById('bestSleepMonth').textContent = sleepData.bestMonthLabel || '—';
+            document.getElementById('totalGreatQuality').textContent = sleepData.totalGreat;
+            document.getElementById('sleepNightsTracked').textContent = sleepData.totalNights;
+
+            // Destroy old charts
+            destroyCharts();
+
+            // --- Habit Bar Chart ---
+            const habitTotals = HABITS.map((h, idx) => {
+                let total = 0;
+                let possible = 0;
+                habitData.results.forEach(({ year, month, days }) => {
+                    const monthData = getMonthData(year, month);
+                    for (let d = 0; d < days; d++) {
+                        const dayKey = String(d);
+                        if (monthData.habits[dayKey] && monthData.habits[dayKey].includes(idx)) {
+                            total++;
+                        }
+                        possible++;
+                    }
+                });
+                return { label: h, total, possible, pct: possible > 0 ? (total / possible) * 100 : 0 };
+            });
+
+            const ctxBar = document.getElementById('habitBarChart').getContext('2d');
+            chartInstances.habitBar = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: habitTotals.map(h => h.label.replace(/\([^)]*\)/g, '').trim()),
+                    datasets: [{
+                        label: 'Completion %',
+                        data: habitTotals.map(h => Math.round(h.pct)),
+                        backgroundColor: habitTotals.map(h =>
+                            h.pct > 70 ? '#6fcf97' :
+                            h.pct > 40 ? '#f0c27f' : '#ff8a9b'
+                        ),
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { max: 100, ticks: { color: '#8a94b0', callback: v => v + '%' }, grid: { color: 'rgba(30,33,41,0.5)' } },
+                        x: { ticks: { color: '#8a94b0', font: { size: 9 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // --- Habit Line Chart ---
+            const ctxLine = document.getElementById('habitLineChart').getContext('2d');
+            chartInstances.habitLine = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: habitData.results.map(r => r.label),
+                    datasets: [{
+                        label: 'Consistency %',
+                        data: habitData.monthlyConsistency,
+                        borderColor: '#7aa9ff',
+                        backgroundColor: 'rgba(122, 169, 255, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#7aa9ff',
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { max: 100, ticks: { color: '#8a94b0', callback: v => v + '%' }, grid: { color: 'rgba(30,33,41,0.5)' } },
+                        x: { ticks: { color: '#8a94b0', font: { size: 9 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // --- Heatmap ---
+            renderHeatmap(habitData.results);
+
+            // --- Sleep Line Chart ---
+            const ctxSleepLine = document.getElementById('sleepLineChart').getContext('2d');
+            chartInstances.sleepLine = new Chart(ctxSleepLine, {
+                type: 'line',
+                data: {
+                    labels: sleepData.results.map(r => r.label),
+                    datasets: [{
+                        label: 'Avg Sleep (hrs)',
+                        data: sleepData.results.map(r => r.avg),
+                        borderColor: '#b388ff',
+                        backgroundColor: 'rgba(179, 136, 255, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#b388ff',
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 0, max: 10, ticks: { color: '#8a94b0' }, grid: { color: 'rgba(30,33,41,0.5)' } },
+                        x: { ticks: { color: '#8a94b0', font: { size: 9 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // --- Sleep Bar Chart ---
+            const ctxSleepBar = document.getElementById('sleepBarChart').getContext('2d');
+            chartInstances.sleepBar = new Chart(ctxSleepBar, {
+                type: 'bar',
+                data: {
+                    labels: sleepData.results.map(r => r.label),
+                    datasets: [{
+                        label: '7+ hrs nights',
+                        data: sleepData.results.map(r => r.nights7plus),
+                        backgroundColor: '#4dd0e1',
+                        borderRadius: 6,
+                    }, {
+                        label: 'Total nights',
+                        data: sleepData.results.map(r => r.totalNights),
+                        backgroundColor: 'rgba(42, 47, 59, 0.6)',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#8a94b0', font: { size: 10 } } }
+                    },
+                    scales: {
+                        y: { ticks: { color: '#8a94b0', stepSize: 5 }, grid: { color: 'rgba(30,33,41,0.5)' } },
+                        x: { ticks: { color: '#8a94b0', font: { size: 9 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // --- Sleep Pie Chart ---
+            const qualityCounts = { Poor: 0, Fair: 0, Good: 0, Great: 0 };
+            EXPECTED_MONTHS.forEach(({ year, month }) => {
+                const monthData = getMonthData(year, month);
+                const days = daysInMonth(year, month);
+                for (let d = 0; d < days; d++) {
+                    const dayKey = String(d);
+                    const entry = monthData.sleep[dayKey];
+                    if (entry && entry.quality) {
+                        qualityCounts[entry.quality] = (qualityCounts[entry.quality] || 0) + 1;
+                    }
+                }
+            });
+
+            const pieLabels = Object.keys(qualityCounts);
+            const pieValues = pieLabels.map(k => qualityCounts[k]);
+            const colors = ['#ff8a9b', '#f0c27f', '#7aa9ff', '#6fcf97'];
+
+            const ctxPie = document.getElementById('sleepPieChart').getContext('2d');
+            chartInstances.sleepPie = new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: pieLabels,
+                    datasets: [{
+                        data: pieValues,
+                        backgroundColor: colors,
+                        borderColor: '#181c25',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#8a94b0', font: { size: 12 }, padding: 12 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // TAB SWITCHING
+        // ============================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+
+                // Update dashboard when switching to it
+                if (this.dataset.tab === 'dashboard') {
+                    updateDashboard();
+                }
+            });
+        });
+
+        // ============================================================
+        // ACTIONS
+        // ============================================================
+        document.getElementById('refreshBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            loadData();
+            const monthSelect = document.getElementById('monthSelect');
+            const parts = monthSelect.value.split('-');
+            renderTracker(parseInt(parts[0]), parseInt(parts[1]) - 1);
+            if (document.getElementById('tab-dashboard').classList.contains('active')) {
+                updateDashboard();
+            }
+            this.innerHTML = '✅ <span>Refreshed!</span>';
+            setTimeout(() => { this.innerHTML = '🔄 <span>Refresh</span>'; }, 1500);
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('⚠️ Delete ALL tracker data? This cannot be undone.')) {
+                localStorage.removeItem('habitSleepTrackerData');
+                loadData();
+                const monthSelect = document.getElementById('monthSelect');
+                const parts = monthSelect.value.split('-');
+                renderTracker(parseInt(parts[0]), parseInt(parts[1]) - 1);
+                if (document.getElementById('tab-dashboard').classList.contains('active')) {
+                    updateDashboard();
+                }
+                this.innerHTML = '✅ <span>Reset!</span>';
+                setTimeout(() => { this.innerHTML = '🗑️ <span>Reset All</span>'; }, 1500);
+            }
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        loadData();
+        populateMonthSelect();
+        const initialSelect = document.getElementById('monthSelect');
+        const parts = initialSelect.value.split('-');
+        renderTracker(parseInt(parts[0]), parseInt(parts[1]) - 1);
+        // Pre-load dashboard data but don't show charts until tab is clicked
+        updateDashboard();
+    </script>
+</body>
+</html>
